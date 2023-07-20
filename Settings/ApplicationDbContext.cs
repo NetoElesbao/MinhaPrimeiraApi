@@ -6,6 +6,7 @@ namespace Settings
     {
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<Tag> Tags { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -17,8 +18,12 @@ namespace Settings
                 .Property(p => p.Name).HasMaxLength(120).IsRequired(true);
             Builder.Entity<Product>()
                 .Property(p => p.Code).HasMaxLength(20).IsRequired(true);
+
             Builder.Entity<Category>()
                 .ToTable("Categories");
+
+            Builder.Entity<Tag>()
+                .ToTable("Tags");
         }
     }
 }

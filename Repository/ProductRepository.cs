@@ -5,7 +5,7 @@ namespace Repository
 {
     public static class ProductRepository
     {
-        public static List<Product> Products { get; set; } = Products = new List<Product>();
+        public static List<Product> Products { get; set; } = new List<Product>();
 
         public static void Init(IConfiguration configuration)
         {

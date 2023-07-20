@@ -8,12 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSqlServer<ApplicationDbContext>(builder.Configuration["Database:SqlServer"]);
 
 var app = builder.Build();
-var appConfiguration = app.Configuration;
+// var appConfiguration = app.Configuration;
 ProductRepository.Init(app.Configuration);
 
 app.MapPost("/products/", (ProductRequest productRequest, ApplicationDbContext context) =>
 {
-    var category = context.Categories.Where(c => c.Id.Equals(productRequest.CategoryId)).First();
+    var category = context.Categories.Where(p => p.Id.Equals(productRequest.CategoryId)).First();
     var product = new Product
     {
         Code = productRequest.Code,
@@ -31,17 +31,19 @@ app.MapPost("/products/", (ProductRequest productRequest, ApplicationDbContext c
             product.Tags.Add(new Tag { Name = item });
         }
     }
+
     context.Products.Add(product);
     context.SaveChanges();
-    return Results.Created($"/products/{product.Id}", product.Id);
+
+    return Results.Created("/products/", product.Id);
 });
 
-app.MapGet("/products/{id}", ([FromRoute] int id, ApplicationDbContext context) =>
+app.MapGet("/products/{id}", ([FromRoute] int Id, ApplicationDbContext context) =>
 {
     var product = context.Products
-        .Include(p => p.Category)
-        .Include(p => p.Tags)
-        .Where(p => p.Id.Equals(id)).FirstOrDefault();
+    .Include(p => p.Category)
+    .Include(p => p.Tags)
+    .Where(p => p.Id.Equals(Id)).FirstOrDefault();
 
     if (product != null)
     {
@@ -49,42 +51,52 @@ app.MapGet("/products/{id}", ([FromRoute] int id, ApplicationDbContext context) 
     }
     else
     {
-        return Results.NotFound();
+        return Results.NotFound("Não encontrado!");
     }
 });
 
-app.MapPut("/products/{id}", ([FromRoute] int id, ProductRequest productRequest, ApplicationDbContext context) =>
+app.MapPut("/products/{id}", ([FromRoute] int Id, ProductRequest productRequest, ApplicationDbContext context) =>
 {
     var product = context.Products
-        .Include(p => p.Tags)
-        .Where(p => p.Id.Equals(id)).First();
+    .Include(p => p.Category)
+    .Include(p => p.Tags).Where(p => p.Id.Equals(Id)).FirstOrDefault();
 
     var category = context.Categories.Where(c => c.Id.Equals(productRequest.CategoryId)).First();
 
-    product.Code = productRequest.Code;
-    product.Name = productRequest.Name;
-    product.Description = productRequest.Description;
-    product.Category = category;
-
-    if (productRequest.Tags != null)
+    if (product != null)
     {
+        product.Code = productRequest.Code;
+        product.Name = productRequest.Name;
+        product.Description = productRequest.Description;
+        product.Category = category;
         product.Tags = new List<Tag>();
         foreach (var item in productRequest.Tags)
         {
             product.Tags.Add(new Tag { Name = item });
         }
+        context.SaveChanges();
+        return Results.Ok("Atualizado com sucesso!");
     }
-
-    context.SaveChanges();
-    return Results.Ok();
+    else
+    {
+        return Results.NotFound("Não encontrado!");
+    }
 });
 
-app.MapDelete("/products/{id}", ([FromRoute] int id, ApplicationDbContext context) =>
+app.MapDelete("/products/{id}", ([FromRoute] int Id, ApplicationDbContext context) =>
 {
-    var product = context.Products.Where(p => p.Id.Equals(id)).First();
-    context.Products.Remove(product);
-    context.SaveChanges();
-    return Results.Ok();
+    var product = context.Products.Where(p => p.Id.Equals(Id)).FirstOrDefault();
+
+    if (product != null)
+    {
+        context.Products.Remove(product);
+        context.SaveChanges();
+        return Results.Ok("Deletado com sucesso!");
+    }
+    else
+    {
+        return Results.NotFound("Não encontrado!");
+    }
 });
 
 app.Run();
