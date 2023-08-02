@@ -1,5 +1,5 @@
 
-namespace Entity
+namespace Model
 {
     public record ProductRequest
     (

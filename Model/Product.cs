@@ -1,5 +1,5 @@
 
-namespace Entity
+namespace Model
 {
     public class Product
     {
@@ -9,7 +9,7 @@ namespace Entity
         public string Description { get; set; }
         public int CategoryId { get; set; }
         public Category Category { get; set; }
-        public List<Tag> Tags { get; set; } 
+        public List<Tag> Tags { get; set; } = new List<Tag>();
     }
 }
 
