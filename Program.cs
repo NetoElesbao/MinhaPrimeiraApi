@@ -17,7 +17,7 @@ app.MapPost("/products/", ([FromBody] ProductRequest request, ApplicationDbConte
         Description = request.Description,
         CategoryId = request.CategoryId
     };
-    
+
     foreach (var item in request.Tags)
         product.Tags.Add(new Tag { Name = item });
 
@@ -76,6 +76,11 @@ app.MapDelete("/products/{id}", ([FromRoute] int id, ApplicationDbContext contex
         return Results.Ok("Deletado com sucesso!");
     }
     return Results.NotFound("Não encontrado!");
+});
+
+app.MapGet("/configurations/", (IConfiguration configuration) =>
+{
+    return Results.Ok(configuration["Database:SqlServer"]);
 });
 
 app.Run();
